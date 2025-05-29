@@ -1,0 +1,27 @@
+site_name: Drawing-robot
+site_description: A project to create a drawing robot using a Arduino and stepper motors.
+site_url: https://robotics-workout.github.io/Drawing-robot/
+theme:
+  name: material
+  font:
+    text: Merriweather Sans
+    code: Red Hat Mono
+  palette:
+    palette:
+    # Dark Mode
+    - scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Dark mode
+      primary: green
+      accent: deep purple
+
+    # Light Mode
+    - scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Light mode
+      primary: blue
+      accent: deep orange
+  
+copyright: Copyright &copy; 2025 Rahul Ravichandran
