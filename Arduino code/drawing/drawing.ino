@@ -33,6 +33,11 @@ AccelStepper stepper2(AccelStepper::DRIVER, RIGHT_STEP_PIN, RIGHT_DIR_PIN);
 
 Servo penServo;  // Create a Servo object
 
+enum PenState {
+  PEN_UP,
+  PEN_DOWN
+};
+
 // Define lengths of belts (in mm)
 // TODO: Add a callibration sequence to fix these values
 float L1 = 500.0; // Length from motor to left belt gripper
@@ -62,16 +67,27 @@ void setup()
 
 void loop() 
 {
-  moveTo(50, 50);
+  moveTo(50, 50, PenState::PEN_DOWN); // Move to (50, 50) with pen down
   delay(2000);
 }
 
 // Move pen to (x, y) using inverse kinematics
-void moveTo(float x, float y) 
+// target x, target y and flag to indicate if its drawing or in transit
+void moveTo(float x, float y, PenState pen_state) 
 {
   float Z1, Z2;
   if (inverseKinematics(x, y, Z1, Z2)) 
   {
+    // Check if the pen is down
+    if (pen_state == PEN_DOWN) 
+    {
+      penDown(); // Move pen down
+    } 
+    else 
+    {
+      penUp(); // Move pen up
+    }
+    
     // Convert belt length change to stepper motor steps
     long steps1 = LEFT_MOTOR_DIRECTION * beltToSteps(Z1 - Z1_i);
     long steps2 = RIGHT_MOTOR_DIRECTION * beltToSteps(Z2 - Z2_i);
