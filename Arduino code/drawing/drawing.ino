@@ -124,12 +124,10 @@ long beltToSteps(float dZ) {
 void penUp() 
 {
   penServo.write(PEN_UP_ANGLE);
-  delay(500);
 }
 
 // Move pen down
 void penDown() 
 {
   penServo.write(PEN_DOWN_ANGLE);
-  delay(500);
 }

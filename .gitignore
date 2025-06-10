@@ -30,3 +30,14 @@
 *.exe
 *.out
 *.app
+
+# virtial environments
+*.venv
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Images
+*.png
+*.jpg
