@@ -22,10 +22,10 @@
 #define RIGHT_MOTOR_DIRECTION 1
 
 // Stepper motor driver pins (step, direction)
-#define LEFT_STEP_PIN 2
-#define LEFT_DIR_PIN 5
-#define RIGHT_STEP_PIN 3
-#define RIGHT_DIR_PIN 6
+#define LEFT_STEP_PIN 17
+#define LEFT_DIR_PIN 16
+#define RIGHT_STEP_PIN 5
+#define RIGHT_DIR_PIN 18
 
 // Initialize stepper motors (step, direction pins)
 AccelStepper stepper1(AccelStepper::DRIVER, LEFT_STEP_PIN, LEFT_DIR_PIN);
