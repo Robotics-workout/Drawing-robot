@@ -82,6 +82,15 @@ python send_waypoints.py --waypoints "300,300 400,300 350,400 300,300"
 python image_to_vectors.py logo.png --method threshold
 ```
 
+### Visualize Drawing (NEW!)
+```bash
+# Simulate from image
+python drawing_simulator.py --image logo.png
+
+# Simulate and send to robot
+python drawing_simulator.py --image logo.png --robot 192.168.4.1 --send
+```
+
 ---
 
 ## 🔧 Troubleshooting

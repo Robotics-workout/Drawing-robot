@@ -7,6 +7,7 @@ This directory contains scripts for controlling the drawing robot via WiFi.
 - `drawing_wifi.ino` - ESP32 Arduino code with WiFi support (dual-core)
 - `image_to_vectors.py` - Python client to convert images to vectors and send to robot
 - `send_waypoints.py` - Python client to send waypoints directly without image processing
+- `drawing_simulator.py` - **NEW!** Visual simulation UI to see robot drawing in real-time
 - `examples.py` - Interactive tutorial script with usage examples
 - `QUICK_START.md` - Quick reference guide for getting started
 
@@ -80,6 +81,18 @@ python send_waypoints.py waypoints.json
 
 # From command line
 python send_waypoints.py --waypoints "100,100 200,100 200,200 100,200 100,100"
+```
+
+**Visualize drawing with simulation UI:**
+```bash
+# Simulate from JSON file
+python drawing_simulator.py --file vectors.json
+
+# Simulate from image
+python drawing_simulator.py --image logo.png
+
+# Connect to robot and visualize
+python drawing_simulator.py --file vectors.json --robot 192.168.4.1 --send
 ```
 
 ### Advanced Options
