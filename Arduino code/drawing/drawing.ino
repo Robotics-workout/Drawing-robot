@@ -11,7 +11,7 @@
 #define STEPS_PER_REV (MOTOR_STEPS * MICROSTEPS)
 #define MM_PER_STEP ((PI * PULLEY_DIAMETER) / STEPS_PER_REV)
 
-#define SERVO_PIN 18      // Servo for pen up/down
+#define SERVO_PIN 19      // Servo for pen up/down
 #define PEN_UP_ANGLE 90   // Adjust for your setup
 #define PEN_DOWN_ANGLE 0  // Adjust for your setup
 
