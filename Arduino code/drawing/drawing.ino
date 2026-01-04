@@ -1,16 +1,24 @@
 #include <AccelStepper.h>
-#include <MultiStepper.h>
 #include <ESP32Servo.h>
+#include <math.h>
 
-#define MOTOR_STEPS 200         // Steps per revolution
-#define MICROSTEPS 1            // Microstepping level
-#define PULLEY_DIAMETER 12.7    // Pulley diameter in mm
+#ifndef PI
+#define PI 3.14159265358979323846
+#endif
+
+#define MOTOR_STEPS 200              // Steps per revolution (NEMA 17 = 200 steps/rev, 1.8°/step)
+#define MICROSTEPS 1                 // Microstepping level (1 = full step, check your driver settings)
+#define PULLEY_TEETH 20              // GT2-20T pulley: 20 teeth
+#define GT2_PITCH 2.0                // GT2 belt pitch: 2mm per tooth
+#define PULLEY_CIRCUMFERENCE (PULLEY_TEETH * GT2_PITCH)  // 20 × 2mm = 40mm
+#define PULLEY_DIAMETER (PULLEY_CIRCUMFERENCE / PI)      // 40mm / π ≈ 12.732mm
 #define BASE 700.0              // Distance between motors in mm
 #define L_ARM 124.959
 #define DRAWING_AREA_HEIGHT 1000.0
 
 #define STEPS_PER_REV (MOTOR_STEPS * MICROSTEPS)
-#define MM_PER_STEP ((PI * PULLEY_DIAMETER) / STEPS_PER_REV)
+// MM_PER_STEP = circumference / steps per rev = 40mm / 200 = 0.2mm per step
+#define MM_PER_STEP (PULLEY_CIRCUMFERENCE / STEPS_PER_REV)
 
 #define SERVO_PIN 19      // Servo for pen up/down
 #define PEN_UP_ANGLE 90   // Adjust for your setup
@@ -32,10 +40,6 @@
 AccelStepper stepper1(AccelStepper::DRIVER, LEFT_STEP_PIN, LEFT_DIR_PIN);
 AccelStepper stepper2(AccelStepper::DRIVER, RIGHT_STEP_PIN, RIGHT_DIR_PIN);
 
-MultiStepper stepperControl;
-
-long positionSteps[2];
-
 Servo penServo;  // Create a Servo object
 
 enum PenState {
@@ -52,6 +56,10 @@ const float drawing_area_y_limits[2] = {DRAWING_AREA_Y_BIAS, DRAWING_AREA_HEIGHT
 float Z1_i = L1 + L_ARM; // Initial length from left motor to the pen
 float Z2_i = L2 + L_ARM; // Initial length from right motor to the pen
 
+// Absolute step positions (initialized to 0, representing initial belt lengths)
+long absoluteSteps1 = 0;
+long absoluteSteps2 = 0;
+
 void setup() 
 {
   Serial.begin(115200);
@@ -61,9 +69,6 @@ void setup()
   stepper1.setAcceleration(500);
   stepper2.setMaxSpeed(1000);
   stepper2.setAcceleration(500);
-
-  stepperControl.addStepper(stepper1);
-  stepperControl.addStepper(stepper2);
 
   // Attach servo to the defined pin
   penServo.attach(SERVO_PIN);
@@ -106,22 +111,63 @@ void moveTo(float x, float y, PenState pen_state)
       penUp(); // Move pen up
     }
     
-    // Convert belt length change to stepper motor steps
-    long steps1 = LEFT_MOTOR_DIRECTION * beltToSteps(Z1 - Z1_i);
-    long steps2 = RIGHT_MOTOR_DIRECTION * beltToSteps(Z2 - Z2_i);
+    // Calculate relative change in belt length and convert to steps
+    long relativeSteps1 = LEFT_MOTOR_DIRECTION * beltToSteps(Z1 - Z1_i);
+    long relativeSteps2 = RIGHT_MOTOR_DIRECTION * beltToSteps(Z2 - Z2_i);
+    
+    // Calculate absolute target positions (current position + relative change)
+    long targetSteps1 = absoluteSteps1 + relativeSteps1;
+    long targetSteps2 = absoluteSteps2 + relativeSteps2;
 
-    // Move stepper motors
-    positionSteps[0] = steps1;
-    positionSteps[1] = steps2;
+    // Calculate absolute distances to scale speeds for synchronized arrival
+    long dist1 = abs(relativeSteps1);
+    long dist2 = abs(relativeSteps2);
+    
+    // Base max speed (steps per second)
+    float baseMaxSpeed = 1000.0;
+    
+    // Save original max speeds to restore later
+    float originalMaxSpeed1 = stepper1.maxSpeed();
+    float originalMaxSpeed2 = stepper2.maxSpeed();
+    
+    // Scale speeds so both steppers arrive at the same time
+    // The stepper with the longer distance gets base speed
+    // The other stepper gets proportionally reduced speed
+    if (dist1 > dist2 && dist1 > 0) {
+      // Stepper1 travels farther - keep it at base speed, slow down stepper2
+      stepper1.setMaxSpeed(baseMaxSpeed);
+      stepper2.setMaxSpeed(baseMaxSpeed * ((float)dist2 / (float)dist1));
+    } else if (dist2 > dist1 && dist2 > 0) {
+      // Stepper2 travels farther - keep it at base speed, slow down stepper1
+      stepper2.setMaxSpeed(baseMaxSpeed);
+      stepper1.setMaxSpeed(baseMaxSpeed * ((float)dist1 / (float)dist2));
+    } else {
+      // Equal distances or zero movement - use same speed
+      stepper1.setMaxSpeed(baseMaxSpeed);
+      stepper2.setMaxSpeed(baseMaxSpeed);
+    }
 
-    stepperControl.moveTo(positionSteps);
-    stepperControl.runSpeedToPosition();
-    // Set current Z values as the initial values
+    // Move stepper motors to absolute positions with acceleration/deceleration
+    stepper1.moveTo(targetSteps1);
+    stepper2.moveTo(targetSteps2);
+
+    // Run both steppers with acceleration until they reach their targets
+    // This provides smooth acceleration at start and deceleration at end
+    // Both will arrive simultaneously due to proportional speed scaling
+    while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0) {
+      stepper1.run();
+      stepper2.run();
+    }
+    
+    // Restore original max speeds
+    stepper1.setMaxSpeed(originalMaxSpeed1);
+    stepper2.setMaxSpeed(originalMaxSpeed2);
+    
+    // Update absolute step positions and belt lengths
+    absoluteSteps1 = targetSteps1;
+    absoluteSteps2 = targetSteps2;
     Z1_i = Z1;
     Z2_i = Z2;
-
-    stepper1.setCurrentPosition(0);
-    stepper2.setCurrentPosition(0);
   } 
   else 
   {

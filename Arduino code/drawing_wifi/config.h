@@ -19,9 +19,12 @@
 #define LEFT_DIR_PIN 5
 
 // ============ ROBOT PARAMETERS ============
-#define MOTOR_STEPS 200         // Steps per revolution
-#define MICROSTEPS 1            // Microstepping level
-#define PULLEY_DIAMETER 12.7    // Pulley diameter in mm
+#define MOTOR_STEPS 200              // Steps per revolution (NEMA 17 = 200 steps/rev, 1.8°/step)
+#define MICROSTEPS 1                 // Microstepping level (1 = full step, check your driver settings)
+#define PULLEY_TEETH 20              // GT2-20T pulley: 20 teeth
+#define GT2_PITCH 2.0                // GT2 belt pitch: 2mm per tooth
+#define PULLEY_CIRCUMFERENCE (PULLEY_TEETH * GT2_PITCH)  // 20 × 2mm = 40mm
+#define PULLEY_DIAMETER (PULLEY_CIRCUMFERENCE / PI)      // 40mm / π ≈ 12.732mm
 #define BASE 700.0              // Distance between motors in mm
 #define L_ARM 124.959
 #define DRAWING_AREA_HEIGHT 1000.0
@@ -31,7 +34,8 @@
 #define RIGHT_MOTOR_DIRECTION 1
 
 #define STEPS_PER_REV (MOTOR_STEPS * MICROSTEPS)
-#define MM_PER_STEP ((PI * PULLEY_DIAMETER) / STEPS_PER_REV)
+// MM_PER_STEP = circumference / steps per rev = 40mm / 200 = 0.2mm per step
+#define MM_PER_STEP (PULLEY_CIRCUMFERENCE / STEPS_PER_REV)
 
 // ============ WiFi CONFIGURATION ============
 // Option 1: Connect to existing WiFi network (Station mode)
