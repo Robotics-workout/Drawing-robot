@@ -44,3 +44,5 @@ __pycache__/
 
 #build files
 build/
+
+.vscode/
