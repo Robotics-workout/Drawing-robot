@@ -12,7 +12,9 @@ PenState currentPenState = PEN_UP;
 
 void initPen() {
   penServo.attach(SERVO_PIN);
-  penUp(); // Start with pen up
+  // Set pen to up position directly (mutex not initialized yet)
+  penServo.write(PEN_UP_ANGLE);
+  currentPenState = PEN_UP;
 }
 
 void penUp() {

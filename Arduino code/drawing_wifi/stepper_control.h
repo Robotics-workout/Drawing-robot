@@ -2,6 +2,7 @@
 #define STEPPER_CONTROL_H
 
 #include <AccelStepper.h>
+#include <MultiStepper.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <freertos/queue.h>
