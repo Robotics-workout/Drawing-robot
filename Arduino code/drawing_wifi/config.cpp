@@ -12,3 +12,4 @@ const char* apPassword = "draw1234";      // WiFi Access Point password (min 8 c
 
 const char* otaPassword = "draw1234";   // OTA update password
 
+

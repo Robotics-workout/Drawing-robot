@@ -63,3 +63,4 @@ These are **absolute belt lengths** measured from the motors to the pen.
 
 **Key Point**: All belt lengths (Z1, Z2, Z1_i, Z2_i) are measured from the motor center to the pen, including both the belt and arm components.
 
+
