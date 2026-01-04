@@ -13,10 +13,10 @@
 #define PEN_DOWN_ANGLE 0  // Adjust for your setup
 
 // Stepper motor driver pins (step, direction)
-#define LEFT_STEP_PIN 17
-#define LEFT_DIR_PIN 16
-#define RIGHT_STEP_PIN 5
-#define RIGHT_DIR_PIN 18
+#define RIGHT_STEP_PIN 17
+#define RIGHT_DIR_PIN 16
+#define LEFT_STEP_PIN 18
+#define LEFT_DIR_PIN 5
 
 // ============ ROBOT PARAMETERS ============
 #define MOTOR_STEPS 200         // Steps per revolution
