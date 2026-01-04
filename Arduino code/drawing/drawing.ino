@@ -1,4 +1,5 @@
 #include <AccelStepper.h>
+#include <MultiStepper.h>
 #include <ESP32Servo.h>
 
 #define MOTOR_STEPS 200         // Steps per revolution
@@ -22,14 +23,18 @@
 #define RIGHT_MOTOR_DIRECTION 1
 
 // Stepper motor driver pins (step, direction)
-#define LEFT_STEP_PIN 17
-#define LEFT_DIR_PIN 16
-#define RIGHT_STEP_PIN 5
-#define RIGHT_DIR_PIN 18
+#define RIGHT_STEP_PIN 17
+#define RIGHT_DIR_PIN 16
+#define LEFT_STEP_PIN 18
+#define LEFT_DIR_PIN 5   
 
 // Initialize stepper motors (step, direction pins)
 AccelStepper stepper1(AccelStepper::DRIVER, LEFT_STEP_PIN, LEFT_DIR_PIN);
 AccelStepper stepper2(AccelStepper::DRIVER, RIGHT_STEP_PIN, RIGHT_DIR_PIN);
+
+MultiStepper stepperControl;
+
+long positionSteps[2];
 
 Servo penServo;  // Create a Servo object
 
@@ -57,6 +62,9 @@ void setup()
   stepper2.setMaxSpeed(1000);
   stepper2.setAcceleration(500);
 
+  stepperControl.addStepper(stepper1);
+  stepperControl.addStepper(stepper2);
+
   // Attach servo to the defined pin
   penServo.attach(SERVO_PIN);
 
@@ -67,7 +75,17 @@ void setup()
 
 void loop() 
 {
+  delay(2000);
   moveTo(50, 50, PenState::PEN_DOWN); // Move to (50, 50) with pen down
+  delay(2000);
+
+  moveTo(200, 50, PenState::PEN_DOWN); // Move to (50, 50) with pen down
+  delay(2000);
+
+  moveTo(200, 200, PenState::PEN_DOWN); // Move to (50, 50) with pen down
+  delay(2000);
+
+  moveTo(50, 200, PenState::PEN_DOWN); // Move to (50, 50) with pen down
   delay(2000);
 }
 
@@ -93,17 +111,17 @@ void moveTo(float x, float y, PenState pen_state)
     long steps2 = RIGHT_MOTOR_DIRECTION * beltToSteps(Z2 - Z2_i);
 
     // Move stepper motors
-    stepper1.moveTo(steps1);
-    stepper2.moveTo(steps2);
+    positionSteps[0] = steps1;
+    positionSteps[1] = steps2;
 
-    while (stepper1.distanceToGo() != 0 || stepper2.distanceToGo() != 0) 
-    {
-      stepper1.run();
-      stepper2.run();
-    }
+    stepperControl.moveTo(positionSteps);
+    stepperControl.runSpeedToPosition();
     // Set current Z values as the initial values
     Z1_i = Z1;
     Z2_i = Z2;
+
+    stepper1.setCurrentPosition(0);
+    stepper2.setCurrentPosition(0);
   } 
   else 
   {
